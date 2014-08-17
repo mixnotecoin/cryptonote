@@ -49,7 +49,7 @@ namespace nodetool
     command_line::add_arg(desc, arg_p2p_add_peer);
     command_line::add_arg(desc, arg_p2p_add_priority_node);
     command_line::add_arg(desc, arg_p2p_add_exclusive_node);
-    command_line::add_arg(desc, arg_p2p_seed_node);    
+    command_line::add_arg(desc, arg_p2p_seed_node);
     command_line::add_arg(desc, arg_p2p_hide_my_port);
   }
   //-----------------------------------------------------------------------------------
@@ -114,7 +114,7 @@ namespace nodetool
     m_allow_local_ip = command_line::get_arg(vm, arg_p2p_allow_local_ip);
 
     if (command_line::has_arg(vm, arg_p2p_add_peer))
-    {       
+    {
       std::vector<std::string> perrs = command_line::get_arg(vm, arg_p2p_add_peer);
       for(const std::string& pr_str: perrs)
       {
@@ -196,7 +196,8 @@ namespace nodetool
   {
     if (!testnet) {
       //TODO add seed for your network
-      //ADD_HARDCODED_SEED_NODE("your_seed_ip.com:8080");
+      ADD_HARDCODED_SEED_NODE("178.62.10.45:50101"); // london
+      ADD_HARDCODED_SEED_NODE("198.199.119.224:50101"); // san francisco
     } else {
       m_network_id.data[0] += 1;
     }
@@ -214,7 +215,7 @@ namespace nodetool
 
     for(auto& p: m_command_line_peers)
       m_peerlist.append_with_peer_white(p);
-    
+
     //only in case if we really sure that we have external visible ip
     m_have_address = true;
     m_ip_address = 0;
@@ -349,7 +350,7 @@ namespace nodetool
     return true;
   }
   //-----------------------------------------------------------------------------------
- 
+
 
   template<class t_payload_net_handler>
   bool node_server<t_payload_net_handler>::do_handshake_with_peer(peerid_type& pi, p2p_connection_context& context_, bool just_take_peerlist)
@@ -358,11 +359,11 @@ namespace nodetool
     typename COMMAND_HANDSHAKE::response rsp;
     get_local_node_data(arg.node_data);
     m_payload_handler.get_payload_sync_data(arg.payload_data);
-    
+
     epee::simple_event ev;
     std::atomic<bool> hsh_result(false);
-    
-    bool r = epee::net_utils::async_invoke_remote_command2<typename COMMAND_HANDSHAKE::response>(context_.m_connection_id, COMMAND_HANDSHAKE::ID, arg, m_net_server.get_config_object(), 
+
+    bool r = epee::net_utils::async_invoke_remote_command2<typename COMMAND_HANDSHAKE::response>(context_.m_connection_id, COMMAND_HANDSHAKE::ID, arg, m_net_server.get_config_object(),
       [this, &pi, &ev, &hsh_result, &just_take_peerlist](int code, const typename COMMAND_HANDSHAKE::response& rsp, p2p_connection_context& context)
     {
       epee::misc_utils::auto_scope_leave_caller scope_exit_handler = epee::misc_utils::create_scope_leave_handler([&](){ev.raise();});
@@ -430,7 +431,7 @@ namespace nodetool
     typename COMMAND_TIMED_SYNC::request arg = AUTO_VAL_INIT(arg);
     m_payload_handler.get_payload_sync_data(arg.payload_data);
 
-    bool r = epee::net_utils::async_invoke_remote_command2<typename COMMAND_TIMED_SYNC::response>(context_.m_connection_id, COMMAND_TIMED_SYNC::ID, arg, m_net_server.get_config_object(), 
+    bool r = epee::net_utils::async_invoke_remote_command2<typename COMMAND_TIMED_SYNC::response>(context_.m_connection_id, COMMAND_TIMED_SYNC::ID, arg, m_net_server.get_config_object(),
       [this](int code, const typename COMMAND_TIMED_SYNC::response& rsp, p2p_connection_context& context)
     {
       if(code < 0)
@@ -612,7 +613,7 @@ namespace nodetool
                     << ":" << boost::lexical_cast<std::string>(pe.adr.port)
                     << "[white=" << use_white_list
                     << "] last_seen: " << (pe.last_seen ? epee::misc_utils::get_time_interval_string(time(NULL) - pe.last_seen) : "never"));
-      
+
       if(!try_to_connect_and_handshake_with_new_peer(pe.adr, false, pe.last_seen, use_white_list))
         continue;
 
@@ -633,7 +634,7 @@ namespace nodetool
       size_t try_count = 0;
       size_t current_index = crypto::rand<size_t>()%m_seed_nodes.size();
       while(true)
-      {        
+      {
         if(m_net_server.is_stop_signal_sent())
           return false;
 
@@ -779,7 +780,7 @@ namespace nodetool
     node_data.peer_id = m_config.m_peer_id;
     if(!m_hide_my_port)
       node_data.my_port = m_external_port ? m_external_port : m_listenning_port;
-    else 
+    else
       node_data.my_port = 0;
     node_data.network_id = m_network_id;
     return true;
